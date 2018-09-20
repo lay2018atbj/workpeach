@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Login</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="" />
+	<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+	<!-- Bootstrap Core CSS -->
+	<link href="/static/manage/css/bootstrap.min.css" rel='stylesheet' type='text/css' />
+	<!-- Custom CSS -->
+	<link href="/static/manage/css/style.css" rel='stylesheet' type='text/css' />
+	<!-- Graph CSS -->
+	<link href="/static/manage/css/font-awesome.css" rel="stylesheet">
+	<!-- jQuery -->
+	<link href='https://fonts.googleapis.com/css?family=Roboto:700,500,300,100italic,100,400' rel='stylesheet' type='text/css'>
+	<!-- lined-icons -->
+	<link rel="stylesheet" href="/static/manage/css/icon-font.min.css" type='text/css' />
+	<!-- //lined-icons -->
+	<script src="/static/manage/js/jquery-1.10.2.min.js"></script>
+	<!--clock init-->
+</head>
+<body>
+<!--/login-->
+
+<div class="error_page">
+	<!--/login-top-->
+
+	<div class="error-top">
+		<h2 class="inner-tittle page">UMA-大熊</h2>
+		<div class="login">
+			<h3 class="inner-tittle t-inner">Login</h3>
+			<div class="buttons login">
+				<ul>
+					<li><a href="#" class="hvr-sweep-to-right">Facebook</a></li>
+					<li class="lost"><a href="#" class="hvr-sweep-to-left">Twitter</a> </li>
+					<div class="clearfix"></div>
+				</ul>
+			</div>
+			<form action="{{url_for('user_login')}}" method="post">
+				<input name="username" type="text" class="text" value="E-mail address" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'E-mail address';}" >
+				<input name="password" type="password" value="Password" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Password';}">
+				<div class="submit"><input type="submit" onclick="myFunction()" value="Login" ></div>
+				<div class="clearfix"></div>
+				{% with errors = get_flashed_messages(category_filter=["user_login_error"]) %}
+				{% if errors %}
+				<ul>
+					{% for msg in errors %}
+					<div class="new">
+						<p style="color:red">{{ msg }}</p>
+						<div class="clearfix"></div>
+					</div>
+					{% endfor %}
+				</ul>
+				{% endif %}
+				{% endwith %}
+
+				<div class="new">
+					<p><label class="checkbox11"><input type="checkbox" name="checkbox"><i> </i>Forgot Password ?</label></p>
+					<p class="sign">Do not have an account ? <a href="{{url_for('index_signup')}}">Sign Up</a></p>
+					<div class="clearfix"></div>
+				</div>
+			</form>
+		</div>
+
+
+	</div>
+
+	<!--//login-top-->
+</div>
+
+<!--//login-->
+<!--footer section start-->
+<div class="footer">
+	<div class="error-btn">
+		<a class="read fourth" href="{{url_for('index_index')}}">Return to Home</a>
+	</div>
+	<p>Copyright &copy; 2016.Company name All rights reserved.More Templates <a href="http://www.cssmoban.com/" target="_blank" title="模板之家">模板之家</a> - Collect from <a href="http://www.cssmoban.com/" title="网页模板" target="_blank">网页模板</a></p>
+</div>
+<!--footer section end-->
+<!--/404-->
+<!--js -->
+<script src="/static/manage/js/jquery.nicescroll.js"></script>
+<script src="/static/manage/js/scripts.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="/static/manage/js/bootstrap.min.js"></script>
+</body>
+</html>

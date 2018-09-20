@@ -1,0 +1,100 @@
+{%extends 'manage/base.html' %}
+
+{%block content%}
+
+<h1>
+    生产管理
+</h1>
+
+
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span class="mws-i-24 i-check">添加产品</span>
+    </div>
+    <div class="mws-panel-body">
+        <form id="mws-validate" class="mws-form" action="{{url_for('ma_manufacture_begin')}}"
+              method="post">
+            <div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
+            <div class="mws-form-inline">
+                <div class="mws-form-row">
+                    <label>生产编号</label>
+                    <div class="mws-form-item large">
+                        <input type="text" name="productId" class="mws-textinput required"/>
+                    </div>
+                </div>
+                <div class="mws-form-row">
+                    <label>工艺编号</label>
+                    <div class="mws-form-item large">
+                        <input type="text" name="techniqueId" class="mws-textinput required"/>
+                    </div>
+                </div>
+                <div class="mws-form-row">
+                    <label>产品描述</label>
+                    <div class="mws-form-item large">
+                        <input type="text" name="desc" class="mws-textinput required number"/>
+                    </div>
+                </div>
+
+                <div class="mws-button-row">
+                    <input type="submit" class="mws-button green" value="添加"/>
+                    <input type="button" class="mws-button orange" onclick="closePopup()" value="取消"/>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span class="mws-i-24 i-check">质量管理</span>
+    </div>
+    <div class="mws-panel-body">
+        <form id="mws-validate" class="mws-form" action="{{url_for('ma_manufacture_end')}}"
+              method="post">
+            <div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
+            <div class="mws-form-inline">
+                <div class="mws-form-row">
+                    <label>生产编号</label>
+                    <div class="mws-form-item large">
+                        <input type="text" name="productId" class="mws-textinput required"/>
+                    </div>
+                </div>
+                <div class="mws-form-row">
+                    <label>过程评定</label>
+                    <div class="mws-form-item large">
+                        <select name="processEval">
+                            <option value="QUALIFIED">合格</option>
+                            <option value="UNQUALIFIED">不合格</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mws-form-row">
+                    <label>结果评定</label>
+                    <div class="mws-form-item large">
+                        <select name="resultEval">
+                            <option value="QUALIFIED">合格</option>
+                            <option value="UNQUALIFIED">不合格</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mws-button-row">
+                    <input type="submit" class="mws-button green" value="提交"/>
+                    <input type="button" class="mws-button orange" onclick="closePopup()" value="取消"/>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{%endblock%}
+
+{%block scripts %}
+<script>
+
+
+</script>
+{%endblock %}
+

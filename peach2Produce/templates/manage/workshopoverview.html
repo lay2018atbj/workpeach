@@ -1,0 +1,121 @@
+{%extends 'manage/base.html'%}
+{%block head%}
+{% endblock%}
+{% block content%}
+
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span>厂房平面图</span>
+    </div>
+    <div class="mws-panel-body">
+        <div class="mws-panel-content">
+            <canvas style="height:95%; width:100%; display:block;" id="plain" >
+            </canvas>
+        </div>
+    </div>
+</div>
+
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span>设备</span>
+    </div>
+    <div class="mws-panel-body">
+        <div class="mws-panel-content">
+            <div class="mws-report-container clearfix">
+
+                {% for id,info in config['DEVICES'].items() %}
+                <a href="{{url_for('ma_workshop_dataview',id=id)}}" class="mws-report" style="margin-bottom:50px;">
+                    <span style="font-size:18px">{{info['name']}}</span>
+                    <img src="/static/manage/images/devoverview.png" style="overview:hidden">
+                    <span style="font-size:15px">连接状态: {{info['status']}}</span>
+                    <br/>
+                    <span style="font-size:15px">生产状态: {{info['produce_status']}}</span>
+                </a>
+                {%endfor%}
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+{%block scripts %}
+<script>
+
+
+    var canvas = document.getElementById("plain") ;
+    var cxt = canvas.getContext("2d");
+    var height=canvas.clientHeight;
+    var width=canvas.clientWidth;
+
+//存储图片链接信息的关联数组
+function cycle(){
+    var sources = {} ;
+    var posX    = {} ;
+    var posY    = {} ;
+    var robotHeight = {} ;
+    var robotWidth = {} ;
+    {%for info in robotModels%}
+        sources['{{info.uniqueid}}'] = '{{info.imageURL}}' ;
+        posX['{{info.uniqueid}}']    = {{info.posX}}  ;
+        posY['{{info.uniqueid}}']    = {{info.posY}}  ;
+        robotWidth['{{info.uniqueid}}']    = {{info.width}}  ;
+        robotHeight['{{info.uniqueid}}']    = {{info.height}}  ;
+    {%endfor%}
+    //调用图片预加载函数，实现回调函数
+    loadImages(sources, function(images){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    //TO-DO something
+        for(src in sources){
+            cxt.drawImage(images[src],posX[src]*canvas.width,posY[src]*canvas.height,robotWidth[src]*canvas.width,robotHeight[src]*canvas.height);
+         }
+    });
+ }
+
+
+function loadImages(sources, callback){
+    var count = 0,
+        images ={},
+        imgNum = 0;
+    for(src in sources){
+        imgNum++;
+    }
+    for(src in sources){
+        images[src] = new Image();
+        images[src].onload = function(){
+            if(++count >= imgNum){
+                callback(images);
+            }
+        }
+        images[src].src = sources[src];
+    }
+}
+
+
+function paintAgv(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    $.ajax({
+           url: "{{url_for('ma_workshop_getAgvPose')}}",
+           type:'GET',
+           success: function(data) {
+                data=JSON.parse(data);
+                if(data){
+                    var carimg=new Image();
+                    carimg.src='/static/manage/images/car.jpg';
+                    cxt.drawImage(carimg,data[0]*canvas.width,data[1]*canvas.height);
+                    cxt.font = "36px 隶书";
+	                cxt.fillStyle = "Green";
+			    }
+           },
+           cache: false
+    });
+}
+
+setInterval(cycle,1000)
+
+
+
+
+</script>
+{%endblock %}

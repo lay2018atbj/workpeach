@@ -1,0 +1,254 @@
+{% extends 'manage/base.html'%}
+
+{%block head%}
+<script src="/static/manage/js/highcharts-6.1.1/code/highcharts.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/exporting.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/series-label.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/oldie.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/highcharts-zh_CN.js"></script>
+{%endblock%}
+
+{%block content%}
+<h1>产品质量</h1>
+
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="todayProcessEval" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="todayResultEval" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+
+                <div class="mws-panel grid_8">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyWorkpieceFinished" style="width:100%; height:400px; "></div>
+                    	</div>
+                    </div>
+                </div>
+
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyProcessEval" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyResultEval" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+
+{% endblock %}
+
+{%block scripts%}
+<script>
+Highcharts.chart('todayProcessEval', {
+		chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+		},
+		title: {
+				text: '今日过程评定'
+		},
+		tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+				pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+								enabled: true,
+								format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+								style: {
+										color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								}
+						}
+				}
+		},
+		series: [{
+				name: 'Brands',
+				colorByPoint: true,
+				data: [{
+						name: '合格',
+						y: {{todayEval.procqulified}},
+						sliced: true,
+						selected: true
+				}, {
+						name: '不合格r',
+						y: {{todayEval.procunqulified}}
+				}]
+		}]
+});
+Highcharts.chart('todayResultEval', {
+		chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+		},
+		title: {
+				text: '今日结果评定'
+		},
+		tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+				pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+								enabled: true,
+								format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+								style: {
+										color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								}
+						}
+				}
+		},
+		series: [{
+				name: 'Brands',
+				colorByPoint: true,
+				data: [{
+						name: '合格',
+						y: {{todayEval.requlified}},
+						sliced: true,
+						selected: true
+				}, {
+						name: '不合格',
+						y: {{todayEval.reunqulified}}
+				}]
+		}]
+});
+var chart = Highcharts.chart('historyWorkpieceFinished', {
+    chart: {
+        type: 'line'
+    },
+    title: {
+        text: '历史完成量'
+    },
+    subtitle: {
+        text: '数据来源: 生产服务器1'
+    },
+    xAxis: {
+        categories: {{historyProduce['dates'] | safe}}
+    },
+    yAxis: {
+        title: {
+            text: '数量'
+        }
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                // 开启数据标签
+                enabled: true
+            },
+            // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+            enableMouseTracking: false
+        }
+    },
+    series: [{
+        name: '已完成',
+        data: {{historyProduce['finished']}}
+    }, {
+        name: '已取消',
+        data: {{historyProduce['canceled']}}
+    }]
+});
+
+Highcharts.chart('historyProcessEval', {
+		chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+		},
+		title: {
+				text: '历史过程评定'
+		},
+		tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+				pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+								enabled: true,
+								format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+								style: {
+										color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								}
+						}
+				}
+		},
+		series: [{
+				name: 'Brands',
+				colorByPoint: true,
+				data: [{
+						name: '合格',
+						y: {{historyEval[0]}},
+						sliced: true,
+						selected: true
+				}, {
+						name: '不合格',
+						y: {{historyEval[1]}}
+				}]
+		}]
+});
+Highcharts.chart('historyResultEval', {
+		chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+		},
+		title: {
+				text: '历史结果评定'
+		},
+		tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+				pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+								enabled: true,
+								format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+								style: {
+										color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								}
+						}
+				}
+		},
+		series: [{
+				name: 'Brands',
+				colorByPoint: true,
+				data: [{
+						name: '合格',
+						y: {{historyEval[2]}},
+						sliced: true,
+						selected: true
+				}, {
+						name: '不合格',
+						y: {{historyEval[3]}}
+				}]
+		}]
+});
+</script>
+{%endblock %}

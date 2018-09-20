@@ -1,0 +1,427 @@
+{% extends 'manage/base.html'%}
+
+{%block head%}
+        <script src="/static/manage/js/highcharts-6.1.1/code/highcharts.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/exporting.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/series-label.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/oldie.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code-plugins/highcharts-zh_CN.js"></script>
+        <script src="/static/manage/js/jquery-1.8.3.min.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/highcharts.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/exporting.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/data.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/drilldown.js"></script>
+{%endblock%}
+
+
+{%block content%}
+<h1>生产效能</h1>
+
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="todayCollectorTime" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="todayRobotTime" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+
+
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyCollectorTime" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="mws-panel grid_4">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyRobotTime" style="width:100%; height:300px; "></div>
+                    	</div>
+                    </div>
+                </div>
+
+
+<pre id="collectorTsv" style="display:none">Browser Version	Total Market Share
+{{todayRuntime['collector']}}</pre>
+<pre id="robotTsv" style="display:none">Browser Version	Total Market Share
+{{todayRuntime['robot']}}</pre>
+<pre id="collectorTsvHistory" style="display:none">Browser Version	Total Market Share
+{{historyRuntime['collector']}}</pre>
+<pre id="robotTsvHistory" style="display:none">Browser Version	Total Market Share
+{{historyRuntime['robot']}}</pre>
+{% endblock %}
+
+{%block scripts%}
+<script>
+Highcharts.data({
+    csv: document.getElementById('collectorTsv').innerHTML,
+    itemDelimiter: '\t',
+    parsed: function (columns) {
+        var brands = {},
+            brandsData = [],
+            versions = {},
+            drilldownSeries = [];
+        // 解析百分比字符串
+        columns[1] = Highcharts.map(columns[1], function (value) {
+            if (value.indexOf('%') === value.length - 1) {
+                value = parseFloat(value);
+            }
+            return value;
+        });
+        $.each(columns[0], function (i, name) {
+            var brand,
+                version;
+            if (i > 0) {
+                // Remove special edition notes
+                name = name.split(' -')[0];
+                // 拆分
+                version = name.match(/(normal)|(stop)/);
+                if (version) {
+                    version = version[0];
+                }
+                brand = name.replace(version, '');
+                //创建主数据
+                if (!brands[brand]) {
+                    brands[brand] = columns[1][i];
+                } else {
+                    brands[brand] += columns[1][i];
+                }
+                // 创建版本数据
+                if (version !== null) {
+                    if (!versions[brand]) {
+                        versions[brand] = [];
+                    }
+                    versions[brand].push([version, columns[1][i]]);
+                }
+            }
+        });
+        $.each(brands, function (name, y) {
+            brandsData.push({
+                name: name,
+                y: y,
+                drilldown: versions[name] ? name : null
+            });
+        });
+        $.each(versions, function (key, value) {
+            drilldownSeries.push({
+                name: key,
+                id: key,
+                data: value
+            });
+        });
+        // 创建图例
+        var chart = Highcharts.chart('todayCollectorTime',{
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '今日采集器运行时间'
+            },
+            subtitle: {
+                text: '单击每个设备进入明细'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: '设备',
+                colorByPoint: true,
+                data: brandsData
+            }],
+            drilldown: {
+                series: drilldownSeries
+            }
+        });
+    }
+});
+Highcharts.data({
+    csv: document.getElementById('robotTsv').innerHTML,
+    itemDelimiter: '\t',
+    parsed: function (columns) {
+        var brands = {},
+            brandsData = [],
+            versions = {},
+            drilldownSeries = [];
+        // 解析百分比字符串
+        columns[1] = Highcharts.map(columns[1], function (value) {
+            if (value.indexOf('%') === value.length - 1) {
+                value = parseFloat(value);
+            }
+            return value;
+        });
+        $.each(columns[0], function (i, name) {
+            var brand,
+                version;
+            if (i > 0) {
+                // Remove special edition notes
+                name = name.split(' -')[0];
+                // 拆分
+                version = name.match(/(work)|(rest)|(exception)/);
+                if (version) {
+                    version = version[0];
+                }
+                brand = name.replace(version, '');
+                //创建主数据
+                if (!brands[brand]) {
+                    brands[brand] = columns[1][i];
+                } else {
+                    brands[brand] += columns[1][i];
+                }
+                // 创建版本数据
+                if (version !== null) {
+                    if (!versions[brand]) {
+                        versions[brand] = [];
+                    }
+                    versions[brand].push([version, columns[1][i]]);
+                }
+            }
+        });
+        $.each(brands, function (name, y) {
+            brandsData.push({
+                name: name,
+                y: y,
+                drilldown: versions[name] ? name : null
+            });
+        });
+        $.each(versions, function (key, value) {
+            drilldownSeries.push({
+                name: key,
+                id: key,
+                data: value
+            });
+        });
+        // 创建图例
+        var chart = Highcharts.chart('todayRobotTime',{
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '今日机器人运行时间'
+            },
+            subtitle: {
+                text: '单击每个设备进入明细.'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: '设备',
+                colorByPoint: true,
+                data: brandsData
+            }],
+            drilldown: {
+                series: drilldownSeries
+            }
+        });
+    }
+});
+
+Highcharts.data({
+    csv: document.getElementById('collectorTsvHistory').innerHTML,
+    itemDelimiter: '\t',
+    parsed: function (columns) {
+        var brands = {},
+            brandsData = [],
+            versions = {},
+            drilldownSeries = [];
+        // 解析百分比字符串
+        columns[1] = Highcharts.map(columns[1], function (value) {
+            if (value.indexOf('%') === value.length - 1) {
+                value = parseFloat(value);
+            }
+            return value;
+        });
+        $.each(columns[0], function (i, name) {
+            var brand,
+                version;
+            if (i > 0) {
+                // Remove special edition notes
+                name = name.split(' -')[0];
+                // 拆分
+                version = name.match(/(normal)|(stop)/);
+                if (version) {
+                    version = version[0];
+                }
+                brand = name.replace(version, '');
+                //创建主数据
+                if (!brands[brand]) {
+                    brands[brand] = columns[1][i];
+                } else {
+                    brands[brand] += columns[1][i];
+                }
+                // 创建版本数据
+                if (version !== null) {
+                    if (!versions[brand]) {
+                        versions[brand] = [];
+                    }
+                    versions[brand].push([version, columns[1][i]]);
+                }
+            }
+        });
+        $.each(brands, function (name, y) {
+            brandsData.push({
+                name: name,
+                y: y,
+                drilldown: versions[name] ? name : null
+            });
+        });
+        $.each(versions, function (key, value) {
+            drilldownSeries.push({
+                name: key,
+                id: key,
+                data: value
+            });
+        });
+        // 创建图例
+        var chart = Highcharts.chart('historyCollectorTime',{
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '历史采集器运行时间'
+            },
+            subtitle: {
+                text: '单击每个设备进入明细'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: '设备',
+                colorByPoint: true,
+                data: brandsData
+            }],
+            drilldown: {
+                series: drilldownSeries
+            }
+        });
+    }
+});
+Highcharts.data({
+    csv: document.getElementById('robotTsvHistory').innerHTML,
+    itemDelimiter: '\t',
+    parsed: function (columns) {
+        var brands = {},
+            brandsData = [],
+            versions = {},
+            drilldownSeries = [];
+        // 解析百分比字符串
+        columns[1] = Highcharts.map(columns[1], function (value) {
+            if (value.indexOf('%') === value.length - 1) {
+                value = parseFloat(value);
+            }
+            return value;
+        });
+        $.each(columns[0], function (i, name) {
+            var brand,
+                version;
+            if (i > 0) {
+                // Remove special edition notes
+                name = name.split(' -')[0];
+                // 拆分
+                version = name.match(/(work)|(rest)|(exception)/);
+                if (version) {
+                    version = version[0];
+                }
+                brand = name.replace(version, '');
+                //创建主数据
+                if (!brands[brand]) {
+                    brands[brand] = columns[1][i];
+                } else {
+                    brands[brand] += columns[1][i];
+                }
+                // 创建版本数据
+                if (version !== null) {
+                    if (!versions[brand]) {
+                        versions[brand] = [];
+                    }
+                    versions[brand].push([version, columns[1][i]]);
+                }
+            }
+        });
+        $.each(brands, function (name, y) {
+            brandsData.push({
+                name: name,
+                y: y,
+                drilldown: versions[name] ? name : null
+            });
+        });
+        $.each(versions, function (key, value) {
+            drilldownSeries.push({
+                name: key,
+                id: key,
+                data: value
+            });
+        });
+        // 创建图例
+        var chart = Highcharts.chart('historyRobotTime',{
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '历史机器人运行时间'
+            },
+            subtitle: {
+                text: '单击每个设备进入明细'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: '设备',
+                colorByPoint: true,
+                data: brandsData
+            }],
+            drilldown: {
+                series: drilldownSeries
+            }
+        });
+    }
+});
+
+</script>
+{%endblock %}

@@ -1,0 +1,217 @@
+{% extends 'manage/base.html' %}
+
+{%block head%}
+        <script src="/static/manage/js/jquery-1.8.3.min.js"></script>
+        <script src="/static/manage/js/highstock-6.1.1/code/highstock.js"></script>
+        <script src="/static/manage/js/highstock-6.1.1/code/modules/exporting.js"></script>
+        <!--script src="/static/manage/js/highcharts-6.1.1/code/highcharts-zh_CN.js"></script> -->
+        <script src="/static/manage/js/highstock-6.1.1/code/themes/dark-unica.js"></script>
+{%endblock%}
+
+{%block content%}
+
+<div class="mws-panel grid_8" >
+    <div class="mws-panel-header">
+        <span class="mws-i-24 i-table-1">数据实时显示</span>
+    </div>
+    <div class="mws-panel-body">
+            <div class="mws-panel-content">
+                  <form class="mws-form" action="{{url_for('ma_workshop_searchHistoryDatas')}}" method="post">
+                        <label>设备数字序号</label>
+                        <input type="text" name="devId" class="mws-textinput required" value="{{id}}"/>
+
+                        <label>起始时间点</label>
+                        <input type="text" name="startTime" class="mws-textinput mws-datepicker hasDatepicker"/>
+
+                        <label>结束时间点</label>
+                        <input type="text" name="endTime" class="mws-textinput mws-datepicker hasDatepicker"/>
+
+                        <input type="submit" class="mws-button green" value="查询"/>
+                 </form>
+
+            </div>
+            <div class="mws-panel-content" style="min-height:550px" id="weldingchart" />
+    </div>
+
+
+
+    </div>
+</div>
+
+
+
+
+{%endblock%}
+
+{%block scripts%}
+
+<script>
+
+Highcharts.setOptions({
+		global : {
+				useUTC : false
+		}
+});
+// Create the chart
+chart = Highcharts.stockChart('weldingchart', {
+		chart : {
+			    type: 'spline',
+				events : {
+						load : function () {
+								// set up the updating of the chart each second
+								var seriesE = this.series[0];
+								var seriesV = this.series[1];
+								var seriesT = this.series[2];
+
+								setInterval(function () {
+								$.ajax({
+                                    url: "{{url_for('ma_workshop_getCollectedDatas',id=id)}}",
+                                    type:'GET',
+                                    success: function(datas) {
+                                     datas=JSON.parse(datas);
+
+                                     var x = (new Date(datas['time'])).getTime(); // current time
+									 seriesE.addPoint([x, datas['e']], true, true);
+									 seriesV.addPoint([x, datas['v']], true, true);
+									 seriesT.addPoint([x, datas['t']], true, true);
+
+                                     var produce_status = datas['produce_status'] ;
+									 var new_title = {
+                                            text: "{{config['DEVICES'][id]['name']}} 的采集数据<br/>机器人状态:" + produce_status,
+                                     };
+                                     chart.setTitle(new_title) ;
+
+                                    },
+                                     cache: false
+                                });
+								}, 1000);
+						}
+				}
+		},
+			rangeSelector: {
+				buttons: [{
+						count: 1,
+						type: 'minute',
+						text: '1M'
+				}, {
+						count: 5,
+						type: 'minute',
+						text: '5M'
+				}, {
+						type: 'all',
+						text: 'All'
+				}],
+				inputEnabled: false,
+				selected: 0
+		},
+		title : {
+				text : "{{config['DEVICES'][id]['name']}} 的采集数据<br/>机器人状态:{{config['DEVICES'][id]['produce_status']}}"
+		},
+		tooltip: {
+				split: false
+		},
+		exporting: {
+				enabled: false
+		},
+		xAxis: {
+		    type: 'datetime',
+		    tickPixelInterval: 150
+	    },
+	    legend: {
+			align: 'left',
+			verticalAlign: 'top',
+			y: 20,
+			floating: true,
+			borderWidth: 0
+		},
+
+		yAxis: [ {    // 第一个坐标轴，电流
+			title: {
+				text: '电流'
+			},
+			plotLines:[{
+                color:'red',           //线的颜色，定义为红色
+                dashStyle:'longdashdot',     //默认值，这里定义为实线
+                value: {{config['DEVICES'][id]['I_THRESHILD_MAX']}},               //定义在那个值上显示标示线，这里是在x轴上刻度为3的值处垂直化一条线
+                width:2,               //标示线的宽度，2px
+                label:{
+                    text:'电流上限',
+                    style:{color:'red'}
+                }
+            },{
+                color:'red',           //线的颜色，定义为红色
+                dashStyle:'longdashdot',     //默认值，这里定义为实线
+                value: {{config['DEVICES'][id]['I_THRESHILD_MIN']}},               //定义在那个值上显示标示线，这里是在x轴上刻度为3的值处垂直化一条线
+                width:2,
+                label:{text:'电流下限',style:{color:'red'} }
+            }],
+            min: 0,
+            labels: {
+			    format: '{value} A',
+			    style: {
+				    color: '#f7a35c'
+			    }
+		    }
+		    ,opposite: true
+		},{
+			title: {
+				text: '电压'
+			},
+		    plotLines:[{
+                color:'white',           //线的颜色，定义为红色
+                dashStyle:'longdashdot',     //默认值，这里定义为实线
+                value: {{config['DEVICES'][id]['V_THRESHILD_MAX']}},               //定义在那个值上显示标示线，这里是在x轴上刻度为3的值处垂直化一条线
+                width:2,
+                label:{text:'电压上限', style:{color:'white'}}
+            },{
+                color:'white',           //线的颜色，定义为红色
+                dashStyle:'longdashdot',     //默认值，这里定义为实线
+                value: {{config['DEVICES'][id]['V_THRESHILD_MIN']}},               //定义在那个值上显示标示线，这里是在x轴上刻度为3的值处垂直化一条线
+                width:2,
+                label:{text:'电压下限', style:{color:'white'} }
+            }],
+            min: 0 ,
+            labels: {
+			    format: '{value} V',
+			    style: {
+				    color: '#7cb5ec'
+			    }
+		    }
+		},{
+			title: {
+				text: '温度'
+			},
+            max: 100 ,
+            labels: {
+			    format: '{value} °C',
+			    style: {
+				    color:'#90ed7d'
+			    }
+			},opposite: true
+		}],
+		series : [{
+				name : '电压',
+                data :  ({{ thousandData['v'] }}),
+				yAxis : 0,
+		        color : '#7cb5ec' ,
+
+		},
+		{
+				name : '电流',
+				data : ({{ thousandData['e'] }}),
+				yAxis : 1,
+		        color : '#f7a35c'
+		},
+		{
+				name : '温度',
+				data : ({{ thousandData['t'] }}),
+				yAxis : 2,
+		        color : '#90ed7d'
+		}]
+});
+
+
+
+
+</script>
+{%endblock %}

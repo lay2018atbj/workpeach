@@ -1,0 +1,66 @@
+{% extends 'manage/base.html'%}
+
+{%block head%}
+        <script src="/static/manage/js/highcharts-6.1.1/code/highcharts.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/modules/exporting.js"></script>
+        <script src="/static/manage/js/highcharts-6.1.1/code/highcharts-zh_CN.js"></script>
+{%endblock%}
+
+{%block content%}
+<div class="mws-panel grid_8">
+                    <div class="mws-panel-body">
+                    	<div class="mws-panel-content">
+                    		<div id="historyCost" style="width:100%; min-height:600px; "></div>
+                    	</div>
+                    </div>
+                </div>
+{% endblock %}
+
+{%block scripts%}
+<script>
+var chart = Highcharts.chart('historyCost',{
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '消耗量'
+    },
+    subtitle: {
+        text: '数据来源: 生产服务器'
+    },
+    xAxis: {
+        categories: {{datas['date'] | safe}}
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '消耗量'
+        }
+    },
+    tooltip: {
+        // head + 每个 point + footer 拼接成完整的 table
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: '耗电量(kWh)',
+        data: {{datas['power']}}
+    }, {
+        name: '耗气量(L)',
+        data: {{datas['air']}}
+    }, {
+        name: '焊丝消耗(g)',
+        data: {{datas['weldingwire']}}
+    }]
+});
+</script>
+{%endblock %}

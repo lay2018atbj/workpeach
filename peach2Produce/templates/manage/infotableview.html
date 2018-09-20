@@ -1,0 +1,132 @@
+{%extends 'manage/base.html'%}
+
+{%block content%}
+<div class="mws-panel grid_8">
+                	<div class="mws-panel-header">
+                    	<span class="mws-i-24 i-table-1">查询</span>
+                    </div>
+                    <div class="mws-panel-body">
+                        <form id="mws-validate" class="mws-form" action="{{url_for('ma_produceinfo_searchinfo')}}" method="post">
+                        	<div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
+                        	<div class="mws-form-inline">
+                            	<div class="mws-form-row">
+                                	<label>工件ID</label>
+                                	<div class="mws-form-item ">
+                                    	<input type="text" name="productId" class="mws-textinput" value="{{formModel.productId}}" />
+                                    </div>
+                                </div>
+                                <div class="mws-form-row">
+                                	<label>工艺ID</label>
+                                	<div class="mws-form-item ">
+                                    	<input type="text" name="techId" class="mws-textinput" value="{{formModel.techId}}"/>
+                                    </div>
+                                </div>
+                            	<div class="mws-form-row">
+                    				<label>状态</label>
+                    				<div class="mws-form-item large">
+                    					<select name="status">
+                    						<option
+                                            {%if not formModel.status %}
+                                                    selected="selected"
+                                             {%endif%} value=""
+                                            >All</option>
+                    						<option value="PROCESSING"
+                                            {%if formModel.status=="PRODUCING" %}
+                                                    selected="selected"
+                                             {%endif%}
+                                            >生产中</option>
+                                            <option value="CANCELED"
+                                            {%if formModel.status=="CANCELED" %}
+                                                    selected="selected"
+                                             {%endif%}
+                                            >已取消</option>
+                    						<option value="FINISHED"
+                                            {%if formModel.status=="FINISHED" %}
+                                                    selected="selected"
+                                             {%endif%}
+                                            >已完成</option>
+                    					</select>
+                    				</div>
+                    			</div>
+                            	<div class="mws-form-row">
+                    				<label>过程评定</label>
+                    				<div class="mws-form-item large">
+                    					<select name="processEval">
+                    						<option
+                                            {%if not formModel.processEval %}
+                                                    selected="selected"
+                                             {%endif%} value=""
+                                            >All</option>
+                    						<option value="QUALIFIED"
+                                            {%if formModel.processEval=="QUALIFIED" %}
+                                                    selected="selected"
+                                             {%endif%}
+                                            >合格</option>
+                    						<option value="UNQUALIFIED"
+                                            {%if formModel.processEval=="UNQUALIFIED" %}
+                                                    selected="selected"
+                                             {%endif%}
+                                            >不合格</option>
+                    					</select>
+                    				</div>
+                    			</div>
+                                <div class="mws-form-row">
+                    				<label>结果评定</label>
+                    				<div class="mws-form-item large">
+                    					<select name="resultEval">
+                    						<option
+                                            {%if not formModel.resultEval %}
+                                                    selected="selected"
+                                             {%endif%} value=""
+                                            >All</option>
+                    						<option value="QUALIFIED"
+                                            {%if formModel.resultEval=="QUALIFIED" %}
+                                                    selected="selected"
+                                            {%endif%}
+                                            >合格</option>
+                    						<option value="UNQUALIFIED"
+                                            {% if formModel.resultEval=="UNQUALIFIED" %}
+                                                    selected="selected"
+                                             {% endif %}
+                                            >不合格</option>
+                    					</select>
+                    				</div>
+                    			</div>
+                            </div>
+                            <div class="mws-button-row">
+                            	<input type="submit" class="mws-button red" value="开始查询"/>
+                            </div>
+                        </form>
+                        <h1>查询结果</h1>
+                        <table class="mws-datatable-fn mws-table">
+                            <thead>
+                                <tr>
+                                    <th>工件ID</th>
+                                    <th>工艺ID</th>
+                                    <th>状态</th>
+                                    <th>过程评定</th>
+                                    <th>结果评定</th>
+                                    <th>描述</th>
+                                    <th>生产时间</th>
+                                    <th>完成时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {%for info in formModel.getSearchResults()%}
+                                <tr class="gradeA">
+                                    <td>{{info.productId}}</td>
+                                    <td>{{info.techId}}</td>
+                                    <td>{{info.status}}</td>
+                                    <td>{{info.processEval}}</td>
+                                    <td>{{info.resultEval}}</td>
+                                    <td>{{info.desc}}</td>
+                                    <td>{{info.beginTime}}</td>
+                                    <td>{{info.endTime}}</td>
+                                </tr>
+                            {%endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+</div>
+
+{%endblock%}

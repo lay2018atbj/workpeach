@@ -1,0 +1,64 @@
+{%extends 'manage/base.html'%}
+
+{%block content%}
+<div class="mws-panel grid_8">
+                	<div class="mws-panel-header">
+                    	<span class="mws-i-24 i-table-1">工艺管理</span>
+                    </div>
+                    <div class="mws-panel-body">
+                        <form id="mws-validate" class="mws-form" action="{{url_for('ma_techniqueinfo_searchinfo')}}" method="post">
+                        	<div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
+                        	<div class="mws-form-inline">
+                            	<div class="mws-form-row">
+                                	<label>产品编号</label>
+                                	<div class="mws-form-item ">
+                                    	<input type="text" name="productKind" class="mws-textinput" value="{{formModel.productKind}}" />
+                                    </div>
+                                </div>
+                                <div class="mws-form-row">
+                                	<label>工艺ID</label>
+                                	<div class="mws-form-item ">
+                                    	<input type="text" name="techniqueId" class="mws-textinput" value="{{formModel.techniqueId}}"/>
+                                    </div>
+                                </div>
+                            	<div class="mws-form-row">
+                    				<label>机器人ID</label>
+                                    <div class="mws-form-item ">
+                                    	<input type="text" name="robotId" class="mws-textinput" value="{{formModel.robotId}}"/>
+                                    </div>
+                    			</div>
+
+                            </div>
+                            <div class="mws-button-row">
+                            	<input type="submit" class="mws-button red" value="开始查询"/>
+                            </div>
+                        </form>
+                        <h1>查询结果</h1>
+                        <table class="mws-datatable-fn mws-table">
+                            <thead>
+                                <tr>
+                                    <th>产品类型</th>
+                                    <th>工艺种类</th>
+                                    <th>生产机器</th>
+                                    <th>电流</th>
+                                    <th>电压</th>
+                                    <th>温度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {%for info in formModel.getSearchResults()%}
+                                <tr class="gradeA">
+                                    <td>{{info.productKind}}</td>
+                                    <td>{{info.techniqueId}}</td>
+                                    <td>{{info.robotId}}</td>
+                                    <td>{{info.electricity}}</td>
+                                    <td>{{info.voltage}}</td>
+                                    <td>{{info.temperature}}</td>
+                                </tr>
+                            {%endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+</div>
+
+{%endblock%}

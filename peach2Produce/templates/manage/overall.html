@@ -1,0 +1,594 @@
+{%extends 'manage/base.html'%}
+
+{%block head%}
+<script type="text/javascript" src="/static/manage/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/static/manage/js/highcharts-6.1.1/code/highcharts.js"></script>
+<script type="text/javascript" src="/static/manage/js/highmapmodel.js"></script>
+<script type="text/javascript" src="/static/manage/js/highcharts-6.1.1/code/modules/series-label.js"></script>
+<script type="text/javascript" src="/static/manage/js/highcharts-6.1.1/code/modules/oldie.js"></script>
+<script type="text/javascript" src="/static/manage/js/highcharts-6.1.1/code/modules/data.js"></script>
+<script type="text/javascript" src="/static/manage/js/drilldown.js"></script>
+<script type="text/javascript" src="/static/manage/js/exporting.js"></script>
+<script type="text/javascript" src="/static/manage/js/proj4.js"></script>
+
+
+{%endblock%}
+
+
+{% block content%}
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span>总控视图</span>
+    </div>
+
+    <div class="mws-panel-body">
+    <div class="mws-dualbox clearfix">
+        <div class="mws-dualbox-row" style="height:400px; overflow:auto">
+        <div class="mws-dualbox-col6" style="height:400px; overflow:auto; background:white;">
+            <ul>
+                <br/>
+                <li><a class="li-choose-click"
+                       onclick="window.location.href='{{ url_for('ma_workshop_overview',factoryId=1)}}'">
+                    陕西省宝鸡市高新区中高创新研究院</a>
+                </li>
+
+                <li><a class="li-choose-click"
+                       onclick="window.location.href='{{ url_for('ma_workshop_overview',factoryId=2)}}'">
+                        陕西省宝鸡市陈仓区丝路机器人研究院</a>
+                </li>
+                <li><a class="li-choose-click"
+                       onclick="window.location.href='{{ url_for('ma_workshop_overview',factoryId=2)}}'">
+                        江苏省泰州市靖江市机器人焊接中心</a>
+                </li>
+            </ul>
+
+        </div>
+        <div class="mws-dualbox-col3">
+                    <div id="container2" style="height:400px;"></div>
+        </div>
+        <div class="mws-dualbox-col4">
+                    <div id="historyRobotTime" style="height:400px; "></div>
+        </div>
+        <div class="mws-dualbox-col4">
+                  	<div id="historyCost" style="height:400px; "></div>
+        </div>
+        </div>
+        <div class="mws-dualbox-row" style="height:400px; overflow:hidden">
+         <div class="mws-dualbox-col6" style="height:400px;">
+             <div class="mws-panel-header">
+                    <span>车间列表</span>
+             </div>
+                     <select id="box1View" multiple="multiple" style="height:85%;width:99%; overflow:auto;" onchange="changeFactory()">
+                         <option value="1" title="中高创新机器人研究院" >中高创新机器人研究院</option>
+                         <option value="2" title="丝路机器人研究院">陈仓区机器人研究院</option>
+                         <option value="3" title="靖江焊接中心">靖江焊接中心</option>
+                     </select>
+         </div>
+         <div class="mws-dualbox-col2" style="height:400px; overflow:auto;">
+                <div class="mws-panel-header">
+                    <span>车间视图</span>
+                </div>
+                <div class="mws-panel-body" id="workplace" style="height:85%;width:99%; overflow:hidden;">
+                    <canvas  id="plain"  style="height:95%; width:100%; display:block;"  ></canvas >
+
+                </div>
+
+        </div>
+        <div class="mws-dualbox-col3" style="height:400px; overflow:auto">
+            <div class="mws-panel-header">
+                    <span>ArcBox</span>
+            </div>
+            <div class="mws-panel-body" id="arcbox-container"  style="height:85%;width:100%; overflow:auto;">
+                 <div class="mws-panel-content">
+                        <div class="mws-report-container clearfix" >
+                            {% for id,info in config['DEVICES'].items() %}
+                            <a href="{{url_for('ma_workshop_dataview',id=id)}}" class="mws-report" style="margin-bottom:50px;">
+                                <span style="font-size:12px">{{info['name']}}</span>
+                                <img src="/static/manage/images/devoverview.png" style="overview:hidden">
+                                <span style="font-size:12px">状态: {{info['status']}}</span>
+                                <br/>
+                                <span style="font-size:12px">生产状态: {{info['produce_status']}}</span>
+                            </a>
+                            {%endfor%}
+                        </div>
+                 </div>
+            </div>
+        </div>
+        <div class="mws-dualbox-col3" style="height:400px; overflow:auto">
+            <div class="mws-panel-header">
+                    <span>机器人</span>
+            </div>
+            <div class="mws-panel-body" style="height:85%;width:49%; overflow:auto;">
+                 <div class="mws-panel-content">
+                        <div class="mws-report-container clearfix" >
+                            {% for id,info in config['DEVICES'].items() %}
+                            <a href="{{url_for('ma_workshop_dataview',id=id)}}" class="mws-report" style="margin-bottom:50px;">
+                                <span style="font-size:12px">{{info['name']}}</span>
+                                <img src="/static/manage/images/websever.jpg" style="overview:hidden">
+                                <span style="font-size:12px">生产状态: {{info['produce_status']}}</span>
+                            </a>
+                            {%endfor%}
+                        </div>
+                 </div>
+            </div>
+         </div>
+
+    </div>
+
+    </div>
+    </div>
+
+</div>
+
+
+
+
+
+<pre id="robotTsvHistory" style="display:none">Browser Version	Total Market Share
+{{historyRuntime['robot']}}
+</pre>
+
+{%endblock%}
+
+{%block scripts %}
+
+<script>
+
+
+var intvId  =  setInterval(cycle,1000,1)
+
+function changeFactory(){
+    var optId = $("#box1View").val();
+    var name=$("#box1View").find("option:selected").attr("title") ;
+    clearInterval(intvId);
+    intvId =  setInterval(cycle,1000,optId) ;
+};
+
+
+
+var canvas = document.getElementById("plain")
+var cxt = canvas.getContext("2d");
+var height=canvas.clientHeight
+var width=canvas.clientWidth
+
+
+
+function loadImages(sources, callback){
+
+    var count = 0,
+        images ={},
+        imgNum = 0;
+    for(src in sources){
+        imgNum++;
+    }
+
+    for(src in sources){
+        images[src] = new Image();
+        images[src].onload = function(){
+            if(++count >= imgNum){
+                callback(images);
+            }
+        }
+        images[src].src = sources[src];
+    }
+}
+
+
+var thisFactory  = 1 ;
+//存储图片链接信息的关联数组
+function cycle(id){
+    var sources = {} ;
+    var posX    = {} ;
+    var posY    = {} ;
+    var robotWidth  = {} ;
+    var robotHeight = {} ;
+    var factoryId   = {} ;
+    thisFactory = id
+    var postData = JSON.stringify({"factoryId":id}) ;
+     $.ajax({
+              url:'{{ url_for('ma_workshop_getRobotModels') }}',
+              type:'POST',
+              data:postData ,
+              async:false,
+              contentType: 'application/json',
+              success:function(result){
+                robotModels=JSON.parse(result);
+                if(robotModels){
+                    for ( key in robotModels){
+                       sources[key]        =  robotModels[key].imageURL ;
+                       posX[key]           =  robotModels[key].posX      ;
+                       posY[key]           =  robotModels[key].posY      ;
+                       robotWidth[key]     =  robotModels[key].width     ;
+                       robotHeight[key]    =  robotModels[key].height    ;
+                       factoryId[key]      =  robotModels[key].factoryId ;
+                    }
+                    //调用图片预加载函数，实现回调函数
+                    loadImages(sources, function(images){
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
+                        //TO-DO something
+                        for(src in sources){
+                            if (factoryId[src] == id){
+                                cxt.drawImage(images[src],posX[src]*canvas.width,posY[src]*canvas.height,robotWidth[src]*canvas.width,robotHeight[src]*canvas.height);
+                            }
+                        }
+                     });
+                 }
+              }
+    });
+ }
+
+
+
+Highcharts.setOptions({
+	lang: {
+		drillUpText: '< 返回 “{series.name}”'
+	}
+});
+
+
+var map = null,
+geochina = '/static/manage/maps/';
+$.getJSON('/static/manage/maps/' + 'china.json', function(mapdata) {
+	var data = [];
+	// 随机数据
+	Highcharts.each(mapdata.features, function(md, index) {
+		var tmp = {
+			name: md.properties.name,
+			value: Math.floor((Math.random() * 100) + 1) // 生成 1 ~ 100 随机值
+		};
+		if(md.properties.drilldown) {
+			tmp.drilldown = md.properties.drilldown;
+		}
+		data.push(tmp);
+	});
+
+
+	map = new Highcharts.Map('container2', {
+        chart: {
+            	events: {
+				drilldown: function(e) {
+				    var chart = this ;
+					this.tooltip.hide();
+					console.log(e);
+					// 异步下钻
+
+					if (e.point.drilldown) {
+						var pointName = e.point.properties.fullname;
+						chart.showLoading('下钻中，请稍后...');
+						// 获取二级行政地区数据并更新图表
+						$.getJSON(geochina +   e.point.drilldown + '.json', function(data) {
+							data = Highcharts.geojson(data);
+							/*  注掉，防止迭代下钻
+							Highcharts.each(data, function(d) {
+								if(d.properties.drilldown) {
+									d.drilldown = d.properties.drilldown;
+								}
+								d.value = Math.floor((Math.random() * 100) + 1); // 生成 1 ~ 100 随机值
+							});
+							*/
+							chart.hideLoading();
+							chart.addSingleSeriesAsDrilldown(e.point, {
+								name: e.point.name,
+								data: data,
+								dataLabels: {
+									enabled: true,
+									format: '{point.name}' ,
+									style : {'fontSize' : '6px' } ,
+                                    color : '#FBFBEA' ,
+                                    enableMouseTracking: true
+								}
+							}) ;
+
+							chart.addSingleSeriesAsDrilldown(e.point, {
+							    type: 'mappoint',
+							    color: "red",
+							    shadow:true ,
+			                    data: [
+			                         {
+			                            lat: 34.355726871669475,
+			                            lon: 107.38744999999997,
+			                            name: '宝鸡市焊接',
+			                            properties:{
+			                                fullname:'宝鸡市陈仓区',
+			                                latitude: 34.3557,
+			                                longitude: 107.3874,
+			                                parent: '陕西省'
+		                                 }
+		                             }
+		                         ],
+		                         name: '制造中心'
+							});
+							chart.applyDrilldown();
+
+						});
+					}
+					this.setTitle({
+								text: pointName
+					});
+				},
+				drillup: function() {
+					this.setTitle({
+						text: '中国'
+					});
+				}
+			}
+		},
+		title: {
+			text: '中国地图'
+		},
+		/*subtitle: {
+			useHTML: true,
+			text: '厂房视图'
+		},*/
+		mapNavigation: {
+			enabled: true,
+			buttonOptions: {
+				verticalAlign: 'bottom'
+			}
+		},
+		tooltip: {
+			useHTML: true,
+			headerFormat: '<table><tr><td>{point.name}</td></tr>',
+			pointFormat: '<tr><td>全称</td><td>{point.properties.fullname}</td></tr>' +
+			'<tr><td>父级</td><td>{point.properties.parent}</td></tr>' +
+			'<tr><td>经纬度</td><td>{point.properties.longitude},{point.properties.latitude}</td></tr>' ,
+			footerFormat: '</table>'
+		},
+        plotOptions: {
+			series: {
+				dataLabels: {
+						enabled: true,
+						format: '{point.name}' ,
+						style : { color:'#333333', fontSize: '9pt', padding: '5px'},
+                        enableMouseTracking: true
+				},
+				marker: {
+					radius: 5 ,
+					enabled:true ,
+					fillColor: 'rgb(255,0,0,0.5)' ,
+					states:{
+                        hover:{
+                          enabled:true
+                        }
+                    },
+                    symbol: 'circle'
+
+				}
+			},
+			map: {
+                        states: {
+                            hover: {
+                                color: '#FFDDFF'
+                            }
+                        }
+            }
+		},
+
+		colorAxis: {
+                    min: 0,
+                    minColor: '#DDDDDD',
+                    maxColor: '#FFFFFF'
+        },
+		series: [{
+			data: data,
+			mapData: mapdata,
+			joinBy: 'name',
+			name: '中国地图',
+		    showInLegend: false ,
+		    borderColor: '#A0A0A0',
+			nullColor: 'rgba(200, 200, 200, 0.3)',
+			dataLabels: {
+									enabled: true,
+									format: '{point.name}' ,
+									style : {'fontSize' : '6px' } ,
+                                    color : '#FBFBEA' ,
+                                    enableMouseTracking: true
+			}
+        },{
+			    type: 'mappoint',
+			    data: [
+			    {
+			        lat: 34.355726871669475,
+			        lon: 107.38744999999997,
+			        name: '宝鸡市',
+			        properties:{
+			            fullname:'宝鸡市陈仓区',
+			            latitude: 34.3557,
+			            longitude: 107.3874,
+			            parent: '陕西'
+		            }
+		            ,color : 'red'
+		        }, {
+			        lat: 32.015795122113005,
+			        lon: 120.27454,
+			        name: '靖江市',
+			        properties:{
+			            fullname:'靖江市',
+			            latitude: 32.0157,
+			            longitude: 120.2745,
+			            parent: '江苏'
+		            } ,color : 'red'
+		        }, {
+			        lat:  34.345642680014414,
+			        lon:  107.22693999999997,
+			        name: '宝鸡市',
+			        properties:{
+			            fullname:'宝鸡市高新区',
+			            latitude:  34.3456,
+			            longitude: 107.2269,
+			            parent: '陕西'
+		            }  ,color : 'red'
+		        }
+		        ],
+			    name: '制造中心' ,
+			    color: Highcharts.getOptions().colors[1],
+			    events: {
+			        click: function(e) {
+                        alert('hello');
+                  }
+			    }
+
+		 }
+        ],
+        drilldown: {
+		    //series: drilldownSeries,
+		    activeDataLabelStyle: {
+			    color: '#FFFFFF',
+			    textDecoration: 'none',
+			    textShadow: '0 0 3px #000000'
+		    },
+		    drillUpButton: {
+			    relativeTo: 'spacingBox',
+			    position: {
+				    x: 0,
+				    y: 60
+			    }
+		    }
+	    }
+	});
+
+});
+
+Highcharts.data({
+    csv: document.getElementById('robotTsvHistory').innerHTML,
+    itemDelimiter: '\t',
+    parsed: function (columns) {
+        var brands = {},
+            brandsData = [],
+            versions = {},
+            drilldownSeries = [];
+        // 解析百分比字符串
+        columns[1] = Highcharts.map(columns[1], function (value) {
+            if (value.indexOf('%') === value.length - 1) {
+                value = parseFloat(value);
+            }
+            return value;
+        });
+        $.each(columns[0], function (i, name) {
+            var brand,
+                version;
+            if (i > 0) {
+                // Remove special edition notes
+                name = name.split(' -')[0];
+                // 拆分
+                version = name.match(/(work)|(rest)|(exception)/);
+                if (version) {
+                    version = version[0];
+                }
+                brand = name.replace(version, '');
+                //创建主数据
+                if (!brands[brand]) {
+                    brands[brand] = columns[1][i];
+                } else {
+                    brands[brand] += columns[1][i];
+                }
+                // 创建版本数据
+                if (version !== null) {
+                    if (!versions[brand]) {
+                        versions[brand] = [];
+                    }
+                    versions[brand].push([version, columns[1][i]]);
+                }
+            }
+        });
+        $.each(brands, function (name, y) {
+            brandsData.push({
+                name: name,
+                y: y,
+                drilldown: versions[name] ? name : null
+            });
+        });
+        $.each(versions, function (key, value) {
+            drilldownSeries.push({
+                name: key,
+                id: key,
+                data: value
+            });
+        });
+        // 创建图例
+        var chart = Highcharts.chart('historyRobotTime',{
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '历史机器人运行时间'
+            },
+            subtitle: {
+                text: '单击每个设备进入明细'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: '设备',
+                colorByPoint: true,
+                data: brandsData
+            }],
+            drilldown: {
+                series: drilldownSeries
+            }
+        });
+    }
+});
+
+
+var chart = Highcharts.chart('historyCost',{
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '消耗量'
+    },
+    subtitle: {
+        text: '数据来源: 生产服务器'
+    },
+    xAxis: {
+        categories: {{historyCost['date'] | safe}}
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '消耗量'
+        }
+    },
+    tooltip: {
+        // head + 每个 point + footer 拼接成完整的 table
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            borderWidth: 0
+        }
+    },
+    series: [{
+        name: '耗电量(kWh)',
+        data: {{historyCost['power']}}
+    }, {
+        name: '耗气量(L)',
+        data: {{historyCost['air']}}
+    }, {
+        name: '焊丝消耗(g)',
+        data: {{historyCost['weldingwire']}}
+    }]
+});
+
+
+
+
+</script>
+{%endblock %}
