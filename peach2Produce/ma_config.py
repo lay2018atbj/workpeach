@@ -6,6 +6,7 @@ from deviceManager import NewDevice
 import json
 import devsocket
 
+
 @application.route('/ma_config/setlocal', methods=['POST'])
 def ma_config_setlocal():
     local = LocalHostConfig.load(request)
